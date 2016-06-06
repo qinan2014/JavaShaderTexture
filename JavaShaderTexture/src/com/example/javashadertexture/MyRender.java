@@ -17,6 +17,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
+import android.opengl.Matrix;
 import android.util.Log;
 
 //import Renderer;
@@ -44,37 +45,52 @@ public class MyRender implements android.opengl.GLSurfaceView.Renderer {
 	};
 	private Context gAct;
 	private int[] mTexture = new int[1];
-	int attribPosition, attribTexCoord, uniformTexture;
+//	int attribPosition, attribTexCoord, uniformTexture;
+	/*attributes 分别为顶点坐标数组0  文理坐标数组1  文理采样器1 */
+	private int[] attributes = new int[5];  // 
+	private float[] mProjMatrix = new float[16];
+	private float[] mVMatrix = new float[16];
+	private float[] mMVPMatrix = new float[16];
 	
 	public MyRender(Context context) {
 		gAct = context;
 	}
+	
 	@Override
 	public void onDrawFrame(GL10 arg0) {
 		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 		GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexture[0]);
-		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);  
-	    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexture[0]);  
 	    vertex.position(0);  
 	    // load the position  
 	    // 3(x , y , z)  
 	    // (2 + 3 )* 4 (float size) = 20  
-	    GLES20.glVertexAttribPointer(attribPosition,   
+	    GLES20.glVertexAttribPointer(attributes[DefinesStatic.VERTEXPOSITION],   
 	                                 3, GLES20.GL_FLOAT,   
 	                                 false, 20, vertex);  
-	   
 	    vertex.position(3);  
 	    // load the texture coordinate  
-	    GLES20.glVertexAttribPointer(attribTexCoord,   
+	    GLES20.glVertexAttribPointer(attributes[DefinesStatic.TEXTUREPOSITION],   
 	                                  2, GLES20.GL_FLOAT,  
-	                                  false, 20, vertex);  
+	                                  false, 20, vertex);
+	    
+	 // 设置相机的位置(视口矩阵)
+	    Matrix.setLookAtM(mVMatrix,0,0,0,5,0f,0f,0f,0f,1.0f,0.0f);
+	    // 计算投影和视口变换
+	    Matrix.multiplyMM(mMVPMatrix,0, mProjMatrix,0, mVMatrix,0);
+	 // 应用投影和视口变换
+	    GLES20.glUniformMatrix4fv(attributes[DefinesStatic.MVPMATRIX],1,false, mMVPMatrix,0);
 	   
 	    GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, index);
 	}
 
 	@Override
-	public void onSurfaceChanged(GL10 arg0, int arg1, int arg2) {	
-		
+	public void onSurfaceChanged(GL10 arg0, int width, int height) {	
+		GLES20.glViewport(0,0, width, height);
+
+		float ratio =(float) width / height;
+
+		// 此投影矩阵在onDrawFrame()中将应用到对象的坐标
+		Matrix.frustumM(mProjMatrix, 0, -ratio, ratio,-1,1,3,7);
 	}
 
 	@Override
@@ -92,7 +108,7 @@ public class MyRender implements android.opengl.GLSurfaceView.Renderer {
 		//生成纹理  
 		GLES20.glGenTextures(1, mTexture, 0);  
         //加载Bitmap  
-        Bitmap bitmap = loadBitmap(gAct, R.drawable.pop_9bg_yellow);  
+        Bitmap bitmap = ShaderHelper.loadBitmap(gAct, R.drawable.pop_9bg_yellow);  
         if (bitmap != null) {  
             //如果bitmap加载成功，则生成此bitmap的纹理映射  
         	GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTexture[0]);  
@@ -109,18 +125,19 @@ public class MyRender implements android.opengl.GLSurfaceView.Renderer {
 	}
 
 	private void initShader() {
-		String vertexSource = getFromAssets("VertexShader.glsl"); 
-		String fragmentSource = getFromAssets("FragmentShader.glsl"); 
+		String vertexSource = ShaderHelper.getFromAssets(gAct, "VertexShader.glsl"); 
+		String fragmentSource = ShaderHelper.getFromAssets(gAct, "FragmentShader.glsl"); 
 
-		int program = createProgram(vertexSource, fragmentSource); 
-		attribPosition = GLES20.glGetAttribLocation(program, "a_position");  
-	    attribTexCoord = GLES20.glGetAttribLocation(program, "a_texCoord");  
-	    uniformTexture = GLES20.glGetUniformLocation(program, "u_samplerTexture"); 
+		int program = ShaderHelper.createProgram(vertexSource, fragmentSource); 
+		attributes[DefinesStatic.VERTEXPOSITION] = GLES20.glGetAttribLocation(program, "a_position");  
+		attributes[DefinesStatic.TEXTUREPOSITION] = GLES20.glGetAttribLocation(program, "a_texCoord");  
+		attributes[DefinesStatic.TEXTURESAMPLE] = GLES20.glGetUniformLocation(program, "u_samplerTexture"); 
+		attributes[DefinesStatic.MVPMATRIX] = GLES20.glGetUniformLocation(program, "uMVPMatrix"); 
 	    GLES20.glUseProgram(program); 
-		GLES20.glEnableVertexAttribArray(attribPosition); 
-		GLES20.glEnableVertexAttribArray(attribTexCoord); 
+		GLES20.glEnableVertexAttribArray(attributes[DefinesStatic.VERTEXPOSITION]); 
+		GLES20.glEnableVertexAttribArray(attributes[DefinesStatic.TEXTUREPOSITION]); 
 //		// Set the sampler to texture unit 0 
-		GLES20.glUniform1i(uniformTexture, 0); 
+		GLES20.glUniform1i(attributes[DefinesStatic.TEXTURESAMPLE], 0); 
 //		Matrix
 	}
 	
@@ -132,85 +149,5 @@ public class MyRender implements android.opengl.GLSurfaceView.Renderer {
 		this.index = ByteBuffer.allocateDirect(quadIndex.length * 2)
 				.order(ByteOrder.nativeOrder()).asShortBuffer();
 		this.index.put(quadIndex).position(0);
-	}
-
-	private String getFromAssets(String fileName) {
-		try {
-			InputStreamReader inputReader = new InputStreamReader(gAct
-					.getResources().getAssets().open(fileName));
-			BufferedReader bufReader = new BufferedReader(inputReader);
-			String line = "";
-			String Result = "";
-			while ((line = bufReader.readLine()) != null)
-				Result += line;
-			return Result;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return "";
-	}
-	
-	private int createShader(int type, String shaderCode){
-		int shader = GLES20.glCreateShader(type);
-		Log.e("create shader", "shade type: " + type);
-		if (shader == 0) {  
-	        throw new RuntimeException("Error create shader. type: " + type);  
-	    }
-		// 将源码添加到shader并编译
-		GLES20.glShaderSource(shader, shaderCode);
-		GLES20.glCompileShader(shader);
-		
-		int[] compiled = new int[1];
-		// Check the compile status  
-	    GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);  
-	   
-	    if (compiled[0] == 0) {  
-	        GLES20.glDeleteShader(shader);  
-	        throw new RuntimeException("Error compile shader: " + GLES20.glGetShaderInfoLog(shader));  
-	    }  
-		
-		return shader;
-	}
-	
-	private int createProgram(String vShader, String fShader){
-		int tmpProgram = GLES20.glCreateProgram();
-		if (tmpProgram == 0) {  
-	        throw new RuntimeException("Error create program.");  
-	    } 
-		int vertexShader = createShader(GLES20.GL_VERTEX_SHADER, vShader);
-		int fragmentShader = createShader(GLES20.GL_FRAGMENT_SHADER, fShader);
-		GLES20.glAttachShader(tmpProgram, vertexShader);
-		GLES20.glAttachShader(tmpProgram, fragmentShader);
-		GLES20.glLinkProgram(tmpProgram);
-		// Check the link status  
-		int[] linked = new int[1];
-	    GLES20.glGetProgramiv(tmpProgram, GLES20.GL_LINK_STATUS, linked, 0);  
-	    if (linked[0] == 0) {  
-	        GLES20.glDeleteProgram(tmpProgram);  
-	        throw new RuntimeException("Error linking program: " +  GLES20.glGetProgramInfoLog(tmpProgram));  
-	    }  
-	 // Free up no longer needed shader resources  
-	    GLES20.glDeleteShader(vertexShader);  
-	    GLES20.glDeleteShader(fragmentShader); 
-		return tmpProgram;
-	}
-	
-	/**
-	 * 加载Bitmap的方法， 用来从res中加载Bitmap资源
-	 * */
-	private Bitmap loadBitmap(Context context, int resourceId) {
-		InputStream is = context.getResources().openRawResource(resourceId);
-		Bitmap bitmap = null;
-		try {// 利用BitmapFactory生成Bitmap
-			bitmap = BitmapFactory.decodeStream(is);
-		} finally {
-			try {// 关闭流
-				is.close();
-				is = null;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return bitmap;
 	}
 }
