@@ -51,6 +51,7 @@ public class MyRender implements android.opengl.GLSurfaceView.Renderer {
 	private float[] mProjMatrix = new float[16];
 	private float[] mVMatrix = new float[16];
 	private float[] mMVPMatrix = new float[16];
+	private float rotateDegree = 0;
 	
 	public MyRender(Context context) {
 		gAct = context;
@@ -75,7 +76,10 @@ public class MyRender implements android.opengl.GLSurfaceView.Renderer {
 	    
 	 // 设置相机的位置(视口矩阵)
 	    Matrix.setLookAtM(mVMatrix,0,0,0,5,0f,0f,0f,0f,1.0f,0.0f);
-	    // 计算投影和视口变换
+	 // 模型矩阵变换
+	    Matrix.rotateM(mVMatrix, 0, rotateDegree, 0, 1, 1);
+	    ++rotateDegree;
+	 // 计算投影和视口变换
 	    Matrix.multiplyMM(mMVPMatrix,0, mProjMatrix,0, mVMatrix,0);
 	 // 应用投影和视口变换
 	    GLES20.glUniformMatrix4fv(attributes[DefinesStatic.MVPMATRIX],1,false, mMVPMatrix,0);
