@@ -12,6 +12,8 @@ import java.nio.ShortBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import com.qinan.MathData;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -45,13 +47,11 @@ public class MyRender implements android.opengl.GLSurfaceView.Renderer {
 	};
 	private Context gAct;
 	private int[] mTexture = new int[1];
-//	int attribPosition, attribTexCoord, uniformTexture;
-	/*attributes 分别为顶点坐标数组0  文理坐标数组1  文理采样器1 */
+	/*attributes 分别为顶点坐标数组0  文理坐标数组1  文理采样器1 模型视图投影矩阵*/
 	private int[] attributes = new int[5];  // 
 	private float[] mProjMatrix = new float[16];
 	private float[] mVMatrix = new float[16];
 	private float[] mMVPMatrix = new float[16];
-	private float rotateDegree = 0;
 	
 	public MyRender(Context context) {
 		gAct = context;
@@ -77,8 +77,8 @@ public class MyRender implements android.opengl.GLSurfaceView.Renderer {
 	 // 设置相机的位置(视口矩阵)
 	    Matrix.setLookAtM(mVMatrix,0,0,0,5,0f,0f,0f,0f,1.0f,0.0f);
 	 // 模型矩阵变换
-	    Matrix.rotateM(mVMatrix, 0, rotateDegree, 0, 1, 1);
-	    ++rotateDegree;
+	    Matrix.rotateM(mVMatrix, 0, MathData.gRotateDegree, 0, 0, 1);
+	    ++MathData.gRotateDegree;
 	 // 计算投影和视口变换
 	    Matrix.multiplyMM(mMVPMatrix,0, mProjMatrix,0, mVMatrix,0);
 	 // 应用投影和视口变换

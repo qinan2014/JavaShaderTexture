@@ -1,21 +1,27 @@
 package com.example.javashadertexture;  
   
 import org.xmlpull.v1.XmlPullParser;
+
 import android.app.Activity;  
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;  
 import android.support.v4.widget.DrawerLayout;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.Xml;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class MainActivity extends Activity {  
+public class MainActivity extends Activity{  
   
     MyGLSurfaceView mView;  
+    private final String Tag = "qinanMainActivity";
   
     @Override 
     protected void onCreate(Bundle icicle) {  
@@ -51,6 +57,25 @@ public class MainActivity extends Activity {
     @Override protected void onResume() {  
         super.onResume();  
         mView.onResume();  
-    }  
-  
+    }
+
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+	    int count = event.getPointerCount();
+	    switch (event.getAction())
+	    {
+	    case MotionEvent.ACTION_MOVE:
+	    	break;
+	    case MotionEvent.ACTION_DOWN:
+	    	if (count > 1){
+	    		
+	    	}
+	    	break;
+	    case MotionEvent.ACTION_UP:
+	    	break;
+	    default:
+	    	break;
+	    }
+		return super.onTouchEvent(event);
+	}
 }

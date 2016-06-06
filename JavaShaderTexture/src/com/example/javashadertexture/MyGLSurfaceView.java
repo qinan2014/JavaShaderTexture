@@ -16,13 +16,5 @@ public class MyGLSurfaceView extends android.opengl.GLSurfaceView {
 		this.setEGLContextClientVersion(2); 
 		this.setRenderer(new MyRender(context)); 
 	}
-
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-		final int action = event.getAction();   
-	    int count = event.getPointerCount();
-	    Log.e(Tag, "onTochEvent point count: " + count);
-	    
-		return super.onTouchEvent(event);
-	}
+	
 }
