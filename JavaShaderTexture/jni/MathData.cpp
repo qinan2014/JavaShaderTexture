@@ -25,7 +25,7 @@ JNIEXPORT jfloat JNICALL Java_com_qinan_MathData_degreeByCircle
 		lenx = - lenx;
 		leny = - leny;
 	}
-	// 计算角度
+	// 计算弧度
 	if (lenx == 0)
 	{
 		if (leny > 0)

@@ -2,7 +2,7 @@ package com.qinan;
 
 public class MathData {
 	static {
-		System.load("mathfunc");
+		System.loadLibrary("mathfunc");
 	}
 	public static float gRotateDegree = (float) 0.0;
 	

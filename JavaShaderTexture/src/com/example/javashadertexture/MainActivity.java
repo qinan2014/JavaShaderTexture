@@ -15,6 +15,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -22,6 +23,7 @@ public class MainActivity extends Activity{
   
     MyGLSurfaceView mView;  
     private final String Tag = "qinanMainActivity";
+    private int winWidth, winHeight;
   
     @Override 
     protected void onCreate(Bundle icicle) {  
@@ -47,6 +49,11 @@ public class MainActivity extends Activity{
 		
 		addContentView(textView, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
 		addContentView(imageButtonLinearLayout, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+    
+		// 获取窗口宽度
+		WindowManager winManager=(WindowManager)getSystemService(Context.WINDOW_SERVICE);
+		winWidth = winManager.getDefaultDisplay().getWidth();
+		winHeight = winManager.getDefaultDisplay().getHeight();
     }  
   
     @Override protected void onPause() {  
@@ -59,19 +66,24 @@ public class MainActivity extends Activity{
         mView.onResume();  
     }
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 	    int count = event.getPointerCount();
+	    Log.e(Tag, "event : " + event.getAction() + "  count: " + count);
 	    switch (event.getAction())
 	    {
 	    case MotionEvent.ACTION_MOVE:
 	    	break;
-	    case MotionEvent.ACTION_DOWN:
+	    case MotionEvent.ACTION_POINTER_2_DOWN:
 	    	if (count > 1){
-	    		
+//	    		Log.e(Tag, "centerpt: " + winWidth / 2 + "  " + winHeight / 2);
+//	    		Log.e(Tag, "pt1: " + event.getX(0) + "  " + event.getY(0));
+//	    		Log.e(Tag, "pt2: " + event.getX(1) + "  " + event.getY(1));
 	    	}
 	    	break;
 	    case MotionEvent.ACTION_UP:
+	    	Log.e(Tag, "pt1: " + event.getX(0) + "  " + event.getY(0));
 	    	break;
 	    default:
 	    	break;
