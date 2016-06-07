@@ -77,8 +77,8 @@ public class MyRender implements android.opengl.GLSurfaceView.Renderer {
 	 // 设置相机的位置(视口矩阵)
 	    Matrix.setLookAtM(mVMatrix,0,0,0,5,0f,0f,0f,0f,1.0f,0.0f);
 	 // 模型矩阵变换
-	    Matrix.rotateM(mVMatrix, 0, MathData.gRotateDegree, 0, 0, 1);
-	    ++MathData.gRotateDegree;
+	    Matrix.rotateM(mVMatrix, 0, - MathData.gRotateDegree * 180, 0, 0, 1);
+//	    ++MathData.gRotateDegree;
 	 // 计算投影和视口变换
 	    Matrix.multiplyMM(mMVPMatrix,0, mProjMatrix,0, mVMatrix,0);
 	 // 应用投影和视口变换

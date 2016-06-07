@@ -18,12 +18,14 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import com.qinan.MathData;;
 
 public class MainActivity extends Activity{  
   
     MyGLSurfaceView mView;  
     private final String Tag = "qinanMainActivity";
     private int winWidth, winHeight;
+    private boolean isDown = false;
   
     @Override 
     protected void onCreate(Bundle icicle) {  
@@ -70,20 +72,32 @@ public class MainActivity extends Activity{
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 	    int count = event.getPointerCount();
-	    Log.e(Tag, "event : " + event.getAction() + "  count: " + count);
+	    float posx1, posy1, posx2, posy2;
+	    
+	    
 	    switch (event.getAction())
 	    {
 	    case MotionEvent.ACTION_MOVE:
+	    	if (isDown){
+	    		try {
+		    		posx1 = event.getX(0);
+		    		posy1 = event.getY(0);
+		    		posx2 = event.getX(1);
+		    		posy2 = event.getY(1);
+		    		Log.e(Tag, "pos1 " + posx1 + "  " + posy1 + "  pos2: " + posx2 + "  " + posy2);
+		    		MathData.gRotateDegree = MathData.degreeByCircle(winWidth / 2, winHeight / 2, posx1, posy1, posx2, posy2);
+	    		}catch (IllegalArgumentException e) {  
+	    	        e.printStackTrace();  
+	    	    }
+	    	}
 	    	break;
 	    case MotionEvent.ACTION_POINTER_2_DOWN:
 	    	if (count > 1){
-//	    		Log.e(Tag, "centerpt: " + winWidth / 2 + "  " + winHeight / 2);
-//	    		Log.e(Tag, "pt1: " + event.getX(0) + "  " + event.getY(0));
-//	    		Log.e(Tag, "pt2: " + event.getX(1) + "  " + event.getY(1));
+	    		isDown = true;
 	    	}
 	    	break;
 	    case MotionEvent.ACTION_UP:
-	    	Log.e(Tag, "pt1: " + event.getX(0) + "  " + event.getY(0));
+	    	isDown = false;
 	    	break;
 	    default:
 	    	break;
