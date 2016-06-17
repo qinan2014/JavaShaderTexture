@@ -74,15 +74,12 @@ public class MyRender implements android.opengl.GLSurfaceView.Renderer {
 	                                  2, GLES20.GL_FLOAT,  
 	                                  false, 20, vertex);
 	    
-	 // 设置相机的位置(视口矩阵)
 	    Matrix.setLookAtM(mVMatrix,0,0,0,5,0f,0f,0f,0f,1.0f,0.0f);
-	 // 模型矩阵变换
-	    Matrix.rotateM(mVMatrix, 0, - MathData.gRotateDegree * 180, 0, 0, 1);
+//	    Matrix.rotateM(mVMatrix, 0, - MathData.gRotateDegree * 180, 0, 0, 1);
 //	    ++MathData.gRotateDegree;
-	 // 计算投影和视口变换
 	    Matrix.multiplyMM(mMVPMatrix,0, mProjMatrix,0, mVMatrix,0);
-	 // 应用投影和视口变换
 	    GLES20.glUniformMatrix4fv(attributes[DefinesStatic.MVPMATRIX],1,false, mMVPMatrix,0);
+	    GLES20.glUniform1f(attributes[DefinesStatic.ANGLE], MathData.gRotateDegree);
 	   
 	    GLES20.glDrawElements(GLES20.GL_TRIANGLES, 6, GLES20.GL_UNSIGNED_SHORT, index);
 	}
@@ -137,6 +134,7 @@ public class MyRender implements android.opengl.GLSurfaceView.Renderer {
 		attributes[DefinesStatic.TEXTUREPOSITION] = GLES20.glGetAttribLocation(program, "a_texCoord");  
 		attributes[DefinesStatic.TEXTURESAMPLE] = GLES20.glGetUniformLocation(program, "u_samplerTexture"); 
 		attributes[DefinesStatic.MVPMATRIX] = GLES20.glGetUniformLocation(program, "uMVPMatrix"); 
+		attributes[DefinesStatic.ANGLE] = GLES20.glGetUniformLocation(program, "angle");
 	    GLES20.glUseProgram(program); 
 		GLES20.glEnableVertexAttribArray(attributes[DefinesStatic.VERTEXPOSITION]); 
 		GLES20.glEnableVertexAttribArray(attributes[DefinesStatic.TEXTUREPOSITION]); 
